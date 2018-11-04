@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    * {
+      margin:0;
+      padding:0;
+    }
+    html , body{
+      width: 100%;
+      height: 100%;
+      background:-webkit-gradient(linear, 0 0, 0 bottom, from(#001441), to(#000819))
+    }
+    .ball{
+      position: absolute;
+      width:30px;
+      height: 30px;
+      left:0;
+      right:0;
+      border-radius:50%;
+    }
+    #snowingStage {
+      position: absolute;
+      width:100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="snowingStage" width="1920" height="1000"></canvas>
+  <script src="ball.js"></script>
+  <script>
+    // for(var i=0; i<10; i++){
+    //   new Ball();
+    // }
+    var Balls = [];
+    var CW,CH;
+    function SnowBall ({
+      x=Math.random()*CW,
+      y=Math.random()*CH,
+      isBig = isBigSnowBit(),
+      vy=isBig?(0.5+Math.random()*2):(0.2+Math.random()),
+      vx=Math.random()>0.5?Math.random()*0.7:-Math.random()*0.7,
+      r = isBig?4+Math.random()*4:2+Math.random()*2,
+      alpha = isBig?0.5+Math.random()*0.2:0.4+Math.random()*0.1,
+      alphaSpeed = Math.random()*0.005,
+      ctx=throwIfMissingStage()
+    }) {
+      this.x = x;
+      this.y = y;
+      this.vx = vx;
+      this.vy = vy;
+      this.r = r;
+      this.alpha = alpha;
+      this.alphaSpeed = alphaSpeed;
+      this.ctx = ctx;
+      Balls.push(this);
+    }
+
+    SnowBall.prototype.pointBall = function() {
+        this.ctx.beginPath();
+        this.ctx.arc(this.x, this.y, this.r , 0, Math.PI*2 , true);
+        this.ctx.fillStyle = `rgba(255,255,255, ${this.alpha})`;
+        this.ctx.fill();
+    }
+
+    SnowBall.prototype.refresh = function() {
+        this.x+=this.vx;
+        this.y+=this.vy;
+        this.alpha -= this.alphaSpeed;
+    }
+
+    SnowBall.prototype.gogogo = function() {
+      this.refresh();
+      this.pointBall();
+    }
+
+    function SnowStage () {
+      var snowingStage = document.getElementById("snowingStage");
+      CW = snowingStage.width;
+      CH = snowingStage.height;
+      var ctx = snowingStage.getContext('2d');
+      var cGradient = ctx.createLinearGradient(0,0,0,CH);
+      cGradient.addColorStop(0, "#066591");
+      cGradient.addColorStop(0.5, "#05b1ff");
+      cGradient.addColorStop(1, "#fff");
+      ctx.fillStyle = cGradient;
+      // ctx.fillRect(0,0,CW,CH);
+      return ctx;
+    }
+
+    function throwIfMissingStage() {
+      throw new Error('Missing Stage');
+    }
+
+    function isBigSnowBit () {
+      return Math.round(Math.random() * 1)
+    }
+
+    window.onload = function() {
+      var snowingStage = document.getElementById("snowingStage");
+      var ctx = snowingStage.getContext('2d');
+      CW = snowingStage.width;
+      CH = snowingStage.height;
+
+      for(var i=0;i<300;i++){
+        new SnowBall({ctx});
+      }
+
+      setInterval(()=>{
+        ctx.clearRect(0,0,CW,CH);
+        for(var ball of Balls){
+          ball.gogogo();
+        }
+      },1000/30)
+    }
+  </script>
+</body>
+</html>
